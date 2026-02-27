@@ -1,115 +1,12 @@
-```html id="rbxmax22"
-<!DOCTYPE html>
-<html>
-<head>
-<title>Roblox Popular Games</title>
-
-<style>
-body{
-    font-family:Arial;
-    background:#0f172a;
-    color:white;
-    padding:20px;
-}
-
-.host-panel{
-    background:#1e293b;
-    padding:15px;
-    border-radius:15px;
-    margin-bottom:20px;
-}
-
-input, select{
-    padding:10px;
-    border-radius:10px;
-    border:none;
-    margin-right:10px;
-}
-
-button{
-    padding:10px 15px;
-    border:none;
-    border-radius:10px;
-    background:#22c55e;
-    cursor:pointer;
-}
-
-.scroll-row{
-    display:flex;
-    gap:20px;
-    overflow-x:auto;
-    padding:10px;
-}
-
-.game-card{
-    min-width:160px;
-    text-align:center;
-    cursor:pointer;
-    transition:0.3s;
-}
-
-.game-card:hover{
-    transform:scale(1.1);
-}
-
-.game-card img{
-    width:160px;
-    height:100px;
-    border-radius:15px;
-}
-
-.popup{
-    display:none;
-    position:fixed;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    background:white;
-    color:black;
-    padding:20px;
-    border-radius:20px;
-    text-align:center;
-}
-.popup img{
-    width:200px;
-    border-radius:15px;
-}
-</style>
-</head>
-
-<body>
-
-<div class="host-panel">
-<h3>Tambah Game Roblox</h3>
-
-<input type="text" id="gameLink" placeholder="Paste Link Roblox">
-<select id="category">
-<option value="today">Today</option>
-<option value="week">Last Week</option>
-</select>
-
-<button onclick="addGame()">Tambah</button>
-</div>
-
-<h2>Popular Today</h2>
-<div class="scroll-row" id="todayRow"></div>
-
-<h2>Last Week</h2>
-<div class="scroll-row" id="weekRow"></div>
-
-<div class="popup" id="popup">
-<img id="popupImg">
-<h3 id="popupName"></h3>
-<a id="popupLink" target="_blank">Play Game</a><br><br>
-<button onclick="closePopup()">Close</button>
-</div>
-
+```html
 <script>
+
+const proxy = "https://api.allorigins.win/raw?url=";
 
 loadGames();
 
 function getPlaceID(link){
-    let match = link.match(/games\/(\\d+)/);
+    let match = link.match(/games\/(\d+)/);
     return match ? match[1] : null;
 }
 
@@ -123,26 +20,32 @@ async function addGame(){
         return;
     }
 
+    try{
+
     // convert placeId → universeId
-    let universeData = await fetch(`https://apis.roblox.com/universes/v1/places/${placeId}/universe`)
+    let universeData = await fetch(proxy + encodeURIComponent(`https://apis.roblox.com/universes/v1/places/${placeId}/universe`))
     .then(res=>res.json());
 
     let universeId = universeData.universeId;
 
     // get thumbnail
-    let thumb = await fetch(`https://thumbnails.roblox.com/v1/games/icons?universeIds=${universeId}&size=256x256&format=Png`)
+    let thumb = await fetch(proxy + encodeURIComponent(`https://thumbnails.roblox.com/v1/games/icons?universeIds=${universeId}&size=256x256&format=Png`))
     .then(res=>res.json());
 
     let image = thumb.data[0].imageUrl;
 
     // get game name
-    let gameData = await fetch(`https://games.roblox.com/v1/games?universeIds=${universeId}`)
+    let gameData = await fetch(proxy + encodeURIComponent(`https://games.roblox.com/v1/games?universeIds=${universeId}`))
     .then(res=>res.json());
 
     let name = gameData.data[0].name;
 
     createGame(image, link, name, category);
     saveGame(image, link, name, category);
+
+    }catch{
+        alert("Gagal ambil data game 😢");
+    }
 }
 
 function createGame(image, link, name, row){
@@ -184,8 +87,6 @@ function loadGames(){
         createGame(g.image, g.link, g.name, g.category);
     });
 }
-</script>
 
-</body>
-</html>
+</script>
 ```
